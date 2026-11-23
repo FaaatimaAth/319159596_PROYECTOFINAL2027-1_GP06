@@ -4,10 +4,10 @@
 #  - pasa a ~3 m de altura frente a la fachada (se ve desde la explanada)
 #  - sube a ~7 m por detras del abside (arriba de la barda del atrio, 2.75 m)
 #  - queda al menos a 2.3 m de torres y muros en todo el recorrido
-# --- Cuadros clave del ALETEO: angulo de las alas en grados (+ = arriba) ---
+# Cuadros clave del ALETEO: angulo de las alas en grados (+ = arriba)
 ala -20
 ala 70
-# --- Cuadros clave del VUELO: x  y  z  giroY(grados)  inclinacionX(grados) ---
+# Cuadros clave del VUELO: x  y  z  giroY(grados)  inclinacionX(grados)
 -1.00 5.00 -27.00 180.0 -0.5   # cuadro 0
 -1.93 4.91 -20.51 163.6 -1.1   # cuadro 1
 -4.63 4.70 -14.66 146.7 -2.7   # cuadro 2

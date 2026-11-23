@@ -40,6 +40,11 @@
 #include "Bosque.h"
 #include "Sendero.h"
 #include "Iluminacion.h"
+#include "Campana.h"
+#include "CalacaMusico.h"
+#include "Catrines.h"
+#include "Alebrije.h"
+#include "Xolo.h"
 
 // Prototipos
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -213,12 +218,36 @@ const float FUERZA_SALTO = 5.0f;   // ~85 cm de alto
 const float GRAVEDAD = 15.0f;
 
 // Mariposas
-const int NUM_MARIPOSAS = 2;
-const char* RUTAS_MARIPOSA[NUM_MARIPOSAS] = {
-	"assets/models/mariposa/vuelo_iglesia.txt",
-	"assets/models/mariposa/vuelo_altar.txt"
+// 8 mariposas en 4 rutas de cuadros clave (2 por ruta, desfasadas):
+// iglesia, ofrenda, panteón y sendero/corredor
+struct ConfigMariposa
+{
+	const char* ruta;
+	float escala;
+	int pasosEntreCuadros;
+	int pasosEntreAleteos;
+	int cuadroInicial;          // empieza en otro punto de la ruta
+	glm::vec3 desplazamiento;   // un poco más arriba para que no vuelen encimadas
 };
-MariposaKeyframes* mariposas[NUM_MARIPOSAS] = { nullptr, nullptr };
+const int NUM_MARIPOSAS = 8;
+const ConfigMariposa CONFIG_MARIPOSAS[NUM_MARIPOSAS] = {
+	{ "assets/models/mariposa/vuelo_iglesia.txt",  0.30f, 120, 5,  0, glm::vec3(0.0f, 0.0f, 0.0f) },
+	{ "assets/models/mariposa/vuelo_iglesia.txt",  0.26f, 120, 6, 10, glm::vec3(0.0f, 1.2f, 0.0f) },
+	{ "assets/models/mariposa/vuelo_altar.txt",    0.15f,  90, 6,  0, glm::vec3(0.0f, 0.0f, 0.0f) },
+	{ "assets/models/mariposa/vuelo_altar.txt",    0.13f,  90, 5,  8, glm::vec3(0.0f, 0.5f, 0.0f) },
+	{ "assets/models/mariposa/vuelo_panteon.txt",  0.20f, 100, 5,  0, glm::vec3(0.0f, 0.0f, 0.0f) },
+	{ "assets/models/mariposa/vuelo_panteon.txt",  0.18f, 100, 6, 10, glm::vec3(0.0f, 0.6f, 0.0f) },
+	{ "assets/models/mariposa/vuelo_corredor.txt", 0.18f, 100, 5,  0, glm::vec3(0.0f, 0.0f, 0.0f) },
+	{ "assets/models/mariposa/vuelo_corredor.txt", 0.16f, 100, 6,  9, glm::vec3(0.0f, 0.5f, 0.0f) }
+};
+MariposaKeyframes* mariposas[NUM_MARIPOSAS] = { nullptr };
+
+// Animaciones nuevas
+Campana campana;           // tecla C: tocar la campana
+CalacaMusico musico;       // calaca que toca la guitarra en la entrada al panteón
+Catrines catrines;         // pareja de catrines bailando un vals
+Alebrije alebrije;         // alebrije que sobrevuela el panteón
+Xolo xolo;                 // xoloitzcuintle que guía por el sendero
 
 // Tiempo
 GLfloat deltaTime = 0.0f;
@@ -282,6 +311,10 @@ bool CheckCollision(glm::vec3 pos)
 
 int main()
 {
+	// Si se abre desde la carpeta Ejecutable, usar los recursos de ProyectoFinal
+	if (GetFileAttributesA("assets") == INVALID_FILE_ATTRIBUTES)
+		SetCurrentDirectoryA("../ProyectoFinal");
+
 	// Ventana
 	glfwInit();
 
@@ -376,24 +409,22 @@ int main()
 	Model mariposaAlaDer((char*)"assets/models/mariposa/ala_der.obj");
 
 	// Mariposas
-	MariposaKeyframes mariposaIglesia(&mariposaCuerpo, &mariposaAlaIzq, &mariposaAlaDer);
-	MariposaKeyframes mariposaAltar(&mariposaCuerpo, &mariposaAlaIzq, &mariposaAlaDer);
-	mariposas[0] = &mariposaIglesia;
-	mariposas[1] = &mariposaAltar;
-
-	// Tamaño y velocidad de las mariposas
-	mariposaIglesia.escala = 0.30f;
-	mariposaIglesia.pasosEntreCuadros = 120;
-	mariposaIglesia.pasosEntreAleteos = 5;
-	mariposaAltar.escala = 0.15f;
-	mariposaAltar.pasosEntreCuadros = 90;
-	mariposaAltar.pasosEntreAleteos = 6;
+	// Las 8 comparten los mismos 3 modelos (cuerpo y alas); solo cambia su estado
+	for (int i = 0; i < NUM_MARIPOSAS; i++)
+	{
+		const ConfigMariposa& c = CONFIG_MARIPOSAS[i];
+		mariposas[i] = new MariposaKeyframes(&mariposaCuerpo, &mariposaAlaIzq, &mariposaAlaDer);
+		mariposas[i]->escala = c.escala;
+		mariposas[i]->pasosEntreCuadros = c.pasosEntreCuadros;
+		mariposas[i]->pasosEntreAleteos = c.pasosEntreAleteos;
+		mariposas[i]->desplazamiento = c.desplazamiento;
+	}
 
 	// Cargar keyframes
 	for (int i = 0; i < NUM_MARIPOSAS; i++)
 	{
-		if (mariposas[i]->CargarDesdeArchivo(RUTAS_MARIPOSA[i]))
-			mariposas[i]->ReproducirDesde(0);
+		if (mariposas[i]->CargarDesdeArchivo(CONFIG_MARIPOSAS[i].ruta))
+			mariposas[i]->ReproducirDesde(CONFIG_MARIPOSAS[i].cuadroInicial);
 	}
 
 	// Papel picado
@@ -443,6 +474,38 @@ int main()
 	// Colisión de las tumbas (montículo de tierra con su lápida o cruz)
 	for (const Tumba& t : tumbas)
 		invisibleWalls.push_back({ t.x0, t.x1, t.z0, t.z1 });
+
+	// Animaciones nuevas
+	// Campanario al fondo del panteón, al final del pasillo de las tumbas
+	campana.posicion = glm::vec3(xPasillo, alturaPiso(xPasillo, -37.0f), -37.0f);
+	campana.cargar();
+
+	// Catrines junto a la ofrenda
+	catrines.posicion = glm::vec3(-32.0f, 0.0f, 7.0f);
+	catrines.cargar();
+
+	// Calaca músico en la entrada del corredor que une el atrio con el panteón
+	// (reutiliza las piezas del esqueleto)
+	HuesosEsqueleto huesos = { &skeleton, &pecho, &craneo,
+		&brazoDer, &antebrazoDer, &manoDer,
+		&brazoIzq, &antebrazoIzq, &manoIzq,
+		&femurDer, &piernaDer, &pieDer,
+		&femurIzq, &piernaIzq, &pieIzq };
+	musico.posicion = glm::vec3(8.0f, 0.0f, 7.0f);
+	musico.rotYBase = -130.0f;   // mira hacia el sendero, por donde llega el jugador
+	musico.cargar(huesos);
+
+	// Alebrije sobre el panteón y xoloitzcuintle en el sendero
+	alebrije.cargar();
+	xolo.cargar();
+
+	// Colisiones de las animaciones fijas
+	{
+		BoundingBox c;
+		campana.caja(c.minX, c.maxX, c.minZ, c.maxZ);   invisibleWalls.push_back(c);
+		catrines.caja(c.minX, c.maxX, c.minZ, c.maxZ);  invisibleWalls.push_back(c);
+		musico.caja(c.minX, c.maxX, c.minZ, c.maxZ);    invisibleWalls.push_back(c);
+	}
 
 	// Cubo
 	GLuint VBO, VAO;
@@ -518,6 +581,13 @@ int main()
 		DoMovement();
 		Animation();
 		fichas.actualizar(skeletonPos, deltaTime);
+
+		// Animaciones nuevas
+		campana.actualizar(deltaTime);
+		musico.actualizar(deltaTime, skeletonPos);
+		catrines.actualizar(deltaTime);
+		alebrije.actualizar(deltaTime);
+		xolo.actualizar(deltaTime, skeletonPos);
 
 		// Cámara en tercera persona
 		float distanceFromSkeleton = 2.5f;
@@ -799,6 +869,13 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		skeleton.Draw(lightingShader);
 
+		// Animaciones nuevas
+		campana.dibujar(lightingShader);
+		musico.dibujar(lightingShader);
+		catrines.dibujar(lightingShader);
+		alebrije.dibujar(lightingShader);
+		xolo.dibujar(lightingShader);
+
 		// Skybox
 		glDepthFunc(GL_LEQUAL);
 		SkyBoxshader.Use();
@@ -836,6 +913,7 @@ int main()
 	glDeleteTextures(1, &cubemapTexture);
 
 	mciSendString(TEXT("close musicaFondo"), NULL, 0, NULL);
+	campana.cerrarAudio();
 
 	glfwTerminate();
 	return 0;
@@ -953,6 +1031,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	if (key == GLFW_KEY_O && action == GLFW_PRESS)
 	{
 		abrirPorton = !abrirPorton;
+	}
+
+	// Campana: darle un empujón
+	if (key == GLFW_KEY_C && action == GLFW_PRESS)
+	{
+		campana.tocar();
 	}
 
 	// Mariposas: detener o reanudar el vuelo

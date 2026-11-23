@@ -26,6 +26,12 @@
     <ClInclude Include="Humo.h" />
     <ClInclude Include="MariposaKeyframes.h" />
     <ClInclude Include="PapelPicado.h" />
+    <ClInclude Include="PiezaColor.h" />
+    <ClInclude Include="Campana.h" />
+    <ClInclude Include="CalacaMusico.h" />
+    <ClInclude Include="Catrines.h" />
+    <ClInclude Include="Alebrije.h" />
+    <ClInclude Include="Xolo.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Shader\background.frag.txt" />

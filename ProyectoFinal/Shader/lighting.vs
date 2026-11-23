@@ -1,11 +1,8 @@
 #version 330 core
-// =============================================================
-//  lighting.vs  (Equipo 1 - Día de Muertos)
-//  Para todos los modelos funciona igual que antes (ondula = 0).
-//  Con ondula = 1 deforma la malla del papel picado:
-//  onda viajera + aleteo fino + balanceo tipo péndulo,
-//  con el borde superior (el doblez del cordón) fijo.
-// =============================================================
+// Vertex shader de iluminación.
+// Con ondula = 0 los modelos se dibujan normal.
+// Con ondula = 1 deforma el papel picado: onda viajera, aleteo y balanceo,
+// con el borde de arriba (el cordón) fijo.
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texCoords;
@@ -18,7 +15,7 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-// ---- Papel picado ----
+// Papel picado
 uniform int   ondula;       // 1 = aplica la ondulación; 0 = modelo normal
 uniform float tiempo;       // glfwGetTime()
 uniform float fase;         // desfase por bandera para que no se muevan igual

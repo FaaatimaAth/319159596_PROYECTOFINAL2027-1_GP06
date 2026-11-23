@@ -1,0 +1,28 @@
+# Mariposa: vuelo SOBRE EL PANTEON, entre las tumbas (centro del pasillo x = 32.3)
+# Ruta: elipse con centro (32.3, -5.0), radios 6.5 m (X) y 16.0 m (Z), 20 cuadros clave.
+# Altura 2.3..3.7 m. giroY = atan2(-dx, -dz); inclinacionX segun la pendiente.
+# Cuadros clave del ALETEO: angulo de las alas en grados (+ = arriba)
+ala -20
+ala 70
+ala 10
+# Cuadros clave del VUELO: x  y  z  giroY(grados)  inclinacionX(grados)
+38.80 3.00 -5.00 176.3 4.7   # cuadro 0
+38.48 3.41 -0.06 168.3 3.2   # cuadro 1
+37.56 3.67 4.40 157.9 0.0   # cuadro 2
+36.12 3.67 7.94 141.4 -5.0   # cuadro 3
+34.31 3.41 10.22 111.3 -10.8   # cuadro 4
+32.30 3.00 11.00 68.7 -10.8   # cuadro 5
+30.29 2.59 10.22 38.6 -5.0   # cuadro 6
+28.48 2.33 7.94 22.1 -0.0   # cuadro 7
+27.04 2.33 4.40 11.7 3.2   # cuadro 8
+26.12 2.59 -0.06 3.7 4.7   # cuadro 9
+25.80 3.00 -5.00 -3.7 4.7   # cuadro 10
+26.12 3.41 -9.94 -11.7 3.2   # cuadro 11
+27.04 3.67 -14.40 -22.1 0.0   # cuadro 12
+28.48 3.67 -17.94 -38.6 -5.0   # cuadro 13
+30.29 3.41 -20.22 -68.7 -10.8   # cuadro 14
+32.30 3.00 -21.00 -111.3 -10.8   # cuadro 15
+34.31 2.59 -20.22 -141.4 -5.0   # cuadro 16
+36.12 2.33 -17.94 -157.9 -0.0   # cuadro 17
+37.56 2.33 -14.40 -168.3 3.2   # cuadro 18
+38.48 2.59 -9.94 -176.3 4.7   # cuadro 19

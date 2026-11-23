@@ -48,6 +48,7 @@ public:
 	float correccionGiroGrados = 0.0f;
     float bisagraX              = 0.0f;
     glm::vec3 desplazamiento    = glm::vec3(0.0f);
+    bool  brilla                = true;   // se dibuja emisiva para que resalte en la noche
 
     // Constructor
     MariposaKeyframes(Model* modeloCuerpo, Model* modeloAlaIzquierda, Model* modeloAlaDerecha)
@@ -121,7 +122,7 @@ public:
     // Imprimir cuadros clave
     void ImprimirCuadrosClave() const
     {
-        printf("// ---- %d cuadros clave de la mariposa ----\n", totalCuadrosClave);
+        printf("// %d cuadros clave de la mariposa\n", totalCuadrosClave);
         for (int i = 0; i < totalCuadrosClave; i++)
         {
             const CuadroClave& c = cuadrosClave[i];
@@ -268,6 +269,11 @@ public:
 
         glUniform1i(glGetUniformLocation(programa, "transparency"), 1);
         glUniform1f(glGetUniformLocation(programa, "specularStrength"), 0.05f);
+
+        // Brillo propio: con emisivo = 1 el shader usa el color de la textura sin la
+        // oscuridad de la noche (como las llamas), así las alas naranjas resaltan.
+        // Es más barato que agregar una luz por mariposa.
+        glUniform1i(glGetUniformLocation(programa, "emisivo"), brilla ? 1 : 0);
         GLboolean cullingEstabaActivo = glIsEnabled(GL_CULL_FACE);
         glDisable(GL_CULL_FACE);
 
@@ -301,6 +307,7 @@ public:
 
         // Restaurar estado
         if (cullingEstabaActivo) glEnable(GL_CULL_FACE);
+        glUniform1i(glGetUniformLocation(programa, "emisivo"), 0);
         glUniform1i(glGetUniformLocation(programa, "transparency"), 0);
         glUniform1f(glGetUniformLocation(programa, "specularStrength"), 0.15f);
     }
